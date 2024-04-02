@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
+  email           String     @unique
+  name            String?
+  username        String?
+  password        String
+  profile_picture String
+  phone           Int?
+  address         Address[]
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  orders          Order[]
+  wishlists       Wishlist[]
+  carts           Cart[]
+}
+
+type Address {
+  street  String
+  city    String
+  state   String
+  zip     String
+  country String
+}
+
+model Banner {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  description     String
+  image           String
+  backgroundImage String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Product {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       Int
+  discount    Int
+  category    String
+  reviews     Review[]
+  wishlists   Wishlist[]
+  carts       Cart[]
+}
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  comment   String
+  rating    Int      @default(0)
+  rateCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String   @db.ObjectId
+}
+
+model Category {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId         String
+  amount          Int
+  status          String   @default("processing")
+  paymentStatus   String
+  paymentType     String
+  shippingAddress String
+  paidAt          DateTime
+  deliveredAt     DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  customerId      String   @db.ObjectId
+  customer        User     @relation(fields: [customerId], references: [id])
+  products        Cart[]
+}
+
+model Cart {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  quantity  Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @db.ObjectId
+  Order     Order?  @relation(fields: [orderId], references: [id])
+  orderId   String? @db.ObjectId
+}
+
+model Wishlist {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+  productId String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @db.ObjectId
+}
+
+model Faq {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
